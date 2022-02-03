@@ -58,8 +58,12 @@ public class CatScriptTokenizer {
         // let's get the value of the string we just iterated through
         String value = src.substring(start, postion);
 
-        takeChar();
-        tokenList.addToken(STRING, value, start, postion, line, lineOffset);
+        if(!tokenizationEnd()) {
+            takeChar();
+            tokenList.addToken(STRING, value, start, postion, line, lineOffset);
+        } else {
+            tokenList.addToken(ERROR, value, start, postion, line, lineOffset);
+        }
 
         return true;
     }
