@@ -102,30 +102,67 @@ public class CatScriptTokenizer {
     }
 
     private void scanSyntax() {
-        // TODO - implement rest of syntax scanning
-        //      - implement comments
         int start = postion;
-        if(matchAndConsume('+')) {
-            tokenList.addToken(PLUS, "+", start, postion, line, lineOffset);
-        } else if(matchAndConsume('-')) {
-            tokenList.addToken(MINUS, "-", start, postion, line, lineOffset);
-        } else if(matchAndConsume('/')) {
-            if (matchAndConsume('/')) {
-                while (peek() != '\n' && !tokenizationEnd()) {
-                    takeChar();
-                }
-            } else {
-                tokenList.addToken(SLASH, "-", start, postion, line, lineOffset);
+        // parenthesis - "(" or ")"
+        if(matchAndConsume('(')) tokenList.addToken(LEFT_PAREN, "(", start, postion, line, lineOffset);
+        else if(matchAndConsume(')')) tokenList.addToken(RIGHT_PAREN, ")", start, postion, line, lineOffset);
+        // brace - "{" or "}"
+        else if(matchAndConsume('{')) tokenList.addToken(LEFT_BRACE, "{", start, postion, line, lineOffset);
+        else if(matchAndConsume('}')) tokenList.addToken(RIGHT_BRACE, "}", start, postion, line, lineOffset);
+        // bracket - "[" or "]"
+        else if(matchAndConsume('[')) tokenList.addToken(LEFT_BRACKET, "[", start, postion, line, lineOffset);
+        else if(matchAndConsume(']')) tokenList.addToken(RIGHT_BRACKET, "]", start, postion, line, lineOffset);
+        // colon
+        else if(matchAndConsume(':')) tokenList.addToken(COLON, ":", start, postion, line, lineOffset);
+        // comma
+        else if(matchAndConsume(',')) tokenList.addToken(COMMA, ",", start, postion, line, lineOffset);
+        // period (dot)
+        else if(matchAndConsume('.')) tokenList.addToken(DOT, ".", start, postion, line, lineOffset);
+        // minus
+        else if(matchAndConsume('-')) tokenList.addToken(MINUS, "-", start, postion, line, lineOffset);
+        // plus
+        else if(matchAndConsume('+')) tokenList.addToken(PLUS, "+", start, postion, line, lineOffset);
+        // forward slash
+        else if(matchAndConsume('/')) {
+            tokenList.addToken(SLASH, "/", start, postion, line, lineOffset);
+        }
+        // asterisk (STAR)
+        else if(matchAndConsume('*')) tokenList.addToken(STAR, "*", start, postion, line, lineOffset);
+        // !=
+        else if (matchAndConsume('!')) {
+            if (matchAndConsume('=')) {
+                tokenList.addToken(BANG_EQUAL, "!=", start, postion, line, lineOffset);
             }
-        } else if(matchAndConsume('=')) {
+        }
+        // equal
+        else if(matchAndConsume('=')) {
+            // equal_equal
             if (matchAndConsume('=')) {
                 tokenList.addToken(EQUAL_EQUAL, "==", start, postion, line, lineOffset);
-            } else {
+            } else { // just one equal (=) sign
                 tokenList.addToken(EQUAL, "=", start, postion, line, lineOffset);
             }
-        } else {
-            tokenList.addToken(ERROR, "<Unexpected Token: [" + takeChar() + "]>", start, postion, line, lineOffset);
         }
+        // greater(than)
+        else if(matchAndConsume('>')) {
+            // greater_equal?
+            if (matchAndConsume('=')) {
+                tokenList.addToken(GREATER_EQUAL, ">=", start, postion, line, lineOffset);
+            } else { // just a greater(than) sign
+                tokenList.addToken(GREATER, ">", start, postion, line, lineOffset);
+            }
+        }
+        // less(than)
+        else if(matchAndConsume('<')) {
+            // less_equal?
+            if (matchAndConsume('=')) {
+                tokenList.addToken(LESS_EQUAL, "<=", start, postion, line, lineOffset);
+            } else { // just a less(than) sign
+                tokenList.addToken(LESS, "<", start, postion, line, lineOffset);
+            }
+        }
+        // Unexpected Token
+        else tokenList.addToken(ERROR, "<Unexpected Token: [" + takeChar() + "]>", start, postion, line, lineOffset);
     }
 
     private void consumeWhitespace() {
