@@ -52,6 +52,8 @@ public class CatScriptTokenizer {
 
         // time to capture the value of the string
         while(!tokenizationEnd() && peek() != '\"') {
+            matchAndConsume('\\');
+            if(tokenizationEnd()) break;
             takeChar();
         }
 
