@@ -183,6 +183,7 @@ public class CatScriptTokenizer {
             } else if (c == '\n') {
                 postion++;
                 line++;
+                lineOffset = 0;
                 continue;
             }
             break;
