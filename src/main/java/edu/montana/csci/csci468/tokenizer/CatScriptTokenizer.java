@@ -174,14 +174,15 @@ public class CatScriptTokenizer {
     }
 
     private void consumeWhitespace() {
-        // TODO update line and lineOffsets
         while (!tokenizationEnd()) {
             char c = peek();
             if (c == ' ' || c == '\r' || c == '\t') {
                 postion++;
+                lineOffset++;
                 continue;
             } else if (c == '\n') {
                 postion++;
+                line++;
                 continue;
             }
             break;
