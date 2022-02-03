@@ -39,8 +39,29 @@ public class CatScriptTokenizer {
     }
 
     private boolean scanString() {
-        // TODO implement string scanning here!
-        return false;
+        // TODO: string may also deliminate with a single quote (')
+        if (peek() != '\"') { // let's assume that strings begin with (")
+            return false; // not a string to scan
+        }
+
+        // capture the string delimiter
+        char str_delimiter = takeChar();
+
+        // keep track of where the string starts
+        int start = postion;
+
+        // time to capture the value of the string
+        while(!tokenizationEnd() && peek() != '\"') {
+            takeChar();
+        }
+
+        // let's get the value of the string we just iterated through
+        String value = src.substring(start, postion);
+
+        takeChar();
+        tokenList.addToken(STRING, value, start, postion, line, lineOffset);
+
+        return true;
     }
 
     private boolean scanIdentifier() {
