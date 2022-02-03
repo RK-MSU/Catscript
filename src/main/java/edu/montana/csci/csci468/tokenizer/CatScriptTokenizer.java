@@ -124,7 +124,15 @@ public class CatScriptTokenizer {
         else if(matchAndConsume('+')) tokenList.addToken(PLUS, "+", start, postion, line, lineOffset);
         // forward slash
         else if(matchAndConsume('/')) {
-            tokenList.addToken(SLASH, "/", start, postion, line, lineOffset);
+            // are we looking at an inline-comment? (i.e. "// some comment")
+            if (matchAndConsume('/')) {
+                // this is a comment
+                while (peek() != '\n' && !tokenizationEnd()) {
+                    takeChar();
+                }
+            } else {
+                tokenList.addToken(SLASH, "/", start, postion, line, lineOffset);
+            }
         }
         // asterisk (STAR)
         else if(matchAndConsume('*')) tokenList.addToken(STAR, "*", start, postion, line, lineOffset);
