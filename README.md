@@ -38,6 +38,23 @@ $ git pull upstream main
 
 In this course we will be creating a small programming language called CatScript
 
+### CatScript Notation
+
+| Usage | Notation |
+| :-- | :-- |
+| definition | = |
+| concatenation | , |
+| termination | ; |
+| alternation | \| |
+| optional | [ ... ] |
+| repetition | { ... } |
+| grouping | ( ... ) |
+| terminal string | " ... " |
+| terminal string | ' ... ' |
+| comment | (* ... *) |
+| special sequence | ? ... ? |
+| exception | - |
+
 ### CatScript Grammar
 
 ```ebnf
