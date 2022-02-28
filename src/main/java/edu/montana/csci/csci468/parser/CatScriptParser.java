@@ -7,6 +7,7 @@ import edu.montana.csci.csci468.tokenizer.Token;
 import edu.montana.csci.csci468.tokenizer.TokenList;
 import edu.montana.csci.csci468.tokenizer.TokenType;
 
+import javax.swing.plaf.nimbus.State;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -67,6 +68,11 @@ public class CatScriptParser {
             return parseForStatement();
         }
 
+        // if
+        if (tokens.match(IF)) {
+            return parseIfStatement();
+        }
+
         return new SyntaxErrorStatement(tokens.consumeToken());
     }
 
@@ -118,6 +124,44 @@ public class CatScriptParser {
         require(RIGHT_BRACE, forStmt);
 
         return forStmt;
+    }
+
+    private Statement parseIfStatement() {
+        if (!tokens.match(IF)) {
+            return null;
+        }
+
+        IfStatement ifStmt = new IfStatement();
+        ifStmt.setStart(tokens.consumeToken());
+
+        require(LEFT_PAREN, ifStmt);
+        ifStmt.setExpression(parseExpression());
+        require(RIGHT_PAREN, ifStmt);
+
+        require(LEFT_BRACE, ifStmt);
+
+        List<Statement> bodyStatements = new ArrayList<>();
+        while(tokens.hasMoreTokens() && !tokens.match(RIGHT_BRACE)) {
+            bodyStatements.add(parseProgramStatement());
+        }
+        ifStmt.setTrueStatements(bodyStatements);
+        require(RIGHT_BRACE, ifStmt);
+
+        if (tokens.matchAndConsume(ELSE)) {
+            List<Statement> elseStatements = new ArrayList<>();
+            if (tokens.match(IF)) {
+                elseStatements.add(parseIfStatement());
+            } else {
+                require(LEFT_BRACE, ifStmt);
+                while(tokens.hasMoreTokens() && !tokens.match(RIGHT_BRACE)) {
+                    elseStatements.add(parseProgramStatement());
+                }
+                require(RIGHT_BRACE, ifStmt);
+            }
+            ifStmt.setElseStatements(elseStatements);
+        }
+
+        return ifStmt;
     }
 
     //============================================================
