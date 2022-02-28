@@ -61,6 +61,12 @@ public class CatScriptParser {
         if (printStmt != null) {
             return printStmt;
         }
+
+        // for
+        if (tokens.match(FOR)) {
+            return parseForStatement();
+        }
+
         return new SyntaxErrorStatement(tokens.consumeToken());
     }
 
@@ -78,6 +84,40 @@ public class CatScriptParser {
         } else {
             return null;
         }
+    }
+
+    private Statement parseForStatement() {
+        if (!tokens.match(FOR)) {
+            return null;
+        }
+
+        ForStatement forStmt = new ForStatement();
+        forStmt.setStart(tokens.consumeToken());
+
+        require(LEFT_PAREN, forStmt);
+
+        if (tokens.match(IDENTIFIER)) {
+            forStmt.setVariableName(tokens.getCurrentToken().getStringValue());
+        }
+
+        require(IDENTIFIER, forStmt);
+        require(IN, forStmt);
+
+        forStmt.setExpression(parseExpression());
+
+        require(RIGHT_PAREN, forStmt);
+        require(LEFT_BRACE, forStmt);
+
+        List<Statement> bodyStatements = new ArrayList<>();
+        while(tokens.hasMoreTokens() && !tokens.match(RIGHT_BRACE)) {
+            bodyStatements.add(parseProgramStatement());
+        }
+        forStmt.setBody(bodyStatements);
+
+        forStmt.setEnd(tokens.getCurrentToken());
+        require(RIGHT_BRACE, forStmt);
+
+        return forStmt;
     }
 
     //============================================================
