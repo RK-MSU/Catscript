@@ -73,6 +73,11 @@ public class CatScriptParser {
             return parseIfStatement();
         }
 
+        // var
+        if (tokens.match(VAR)) {
+            return parseVarStatement();
+        }
+
         return new SyntaxErrorStatement(tokens.consumeToken());
     }
 
@@ -162,6 +167,20 @@ public class CatScriptParser {
         }
 
         return ifStmt;
+    }
+
+    private Statement parseVarStatement() {
+        if (!tokens.match(VAR)) {
+            return null;
+        }
+
+        VariableStatement varStmt = new VariableStatement();
+        varStmt.setStart(tokens.consumeToken());
+        varStmt.setVariableName(require(IDENTIFIER, varStmt).getStringValue());
+        require(EQUAL, varStmt);
+        varStmt.setExpression(parseExpression());
+
+        return varStmt;
     }
 
     //============================================================
