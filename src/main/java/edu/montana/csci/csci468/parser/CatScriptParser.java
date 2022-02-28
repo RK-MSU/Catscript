@@ -78,6 +78,11 @@ public class CatScriptParser {
             return parseVarStatement();
         }
 
+        // function
+        if (tokens.match(FUNCTION)) {
+            return parseFunctionDefinitionStatement();
+        }
+
         return new SyntaxErrorStatement(tokens.consumeToken());
     }
 
@@ -183,6 +188,39 @@ public class CatScriptParser {
         return varStmt;
     }
 
+    private Statement parseFunctionDefinitionStatement() {
+        if (!tokens.match(FUNCTION)) {
+            return null;
+        }
+        FunctionDefinitionStatement fncDefStmt = new FunctionDefinitionStatement();
+        fncDefStmt.setStart(tokens.consumeToken());
+
+        fncDefStmt.setName(require(IDENTIFIER, fncDefStmt).getStringValue());
+
+        require(LEFT_PAREN, fncDefStmt);
+        while(tokens.hasMoreTokens() && !tokens.match(RIGHT_PAREN)) {
+            Token fncParam = tokens.consumeToken();
+            String fncParamString = fncParam.getStringValue();
+            TypeLiteral fncParamType = null;
+            fncDefStmt.addParameter(fncParamString, fncParamType);
+            tokens.matchAndConsume(COMMA);
+        }
+        require(RIGHT_PAREN, fncDefStmt);
+
+        TypeLiteral type = new TypeLiteral();
+        type.setType(CatscriptType.VOID);
+        fncDefStmt.setType(type);
+
+        require(LEFT_BRACE, fncDefStmt);
+        List<Statement> bodyStatements = new ArrayList<>();
+        while(tokens.hasMoreTokens() && !tokens.match(RIGHT_BRACE)) {
+            bodyStatements.add(parseProgramStatement());
+        }
+        fncDefStmt.setBody(bodyStatements);
+        fncDefStmt.setEnd(require(RIGHT_BRACE, fncDefStmt));
+
+        return fncDefStmt;
+    }
     //============================================================
     //  Expressions
     //============================================================
