@@ -83,6 +83,14 @@ public class CatScriptParser {
             return parseFunctionDefinitionStatement();
         }
 
+        // identifier
+        if (tokens.match(IDENTIFIER)) {
+            Token token = tokens.consumeToken();
+            if (tokens.matchAndConsume(EQUAL)) {
+                return parseAssignmentStatement(token);
+            }
+        }
+
         return new SyntaxErrorStatement(tokens.consumeToken());
     }
 
@@ -251,6 +259,14 @@ public class CatScriptParser {
 
         return fncDefStmt;
     }
+
+    private Statement parseAssignmentStatement(Token name) {
+        AssignmentStatement assignmentStmt = new AssignmentStatement();
+        assignmentStmt.setVariableName(name.getStringValue());
+        assignmentStmt.setExpression(parseExpression());
+        return assignmentStmt;
+    }
+
     //============================================================
     //  Expressions
     //============================================================
