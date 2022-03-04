@@ -97,6 +97,13 @@ public class CatScriptParser {
             typeLiteral.setType(CatscriptType.BOOLEAN);
         } else if (type_lit_str.equals("object")) {
             typeLiteral.setType(CatscriptType.OBJECT);
+        } else if (type_lit_str.equals("list")) {
+            if (tokens.matchAndConsume(LESS)) {
+                typeLiteral.setType(CatscriptType.getListType(parseTypeLiteral().getType()));
+                tokens.matchAndConsume(GREATER);
+            } else {
+                typeLiteral.setType(CatscriptType.getListType(CatscriptType.OBJECT));
+            }
         }
 
         return typeLiteral;
