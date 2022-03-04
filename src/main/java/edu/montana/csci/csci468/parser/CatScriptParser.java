@@ -86,6 +86,22 @@ public class CatScriptParser {
         return new SyntaxErrorStatement(tokens.consumeToken());
     }
 
+    private TypeLiteral parseTypeLiteral() {
+        TypeLiteral typeLiteral = new TypeLiteral();
+        String type_lit_str = tokens.consumeToken().getStringValue();
+        if (type_lit_str.equals("int")) {
+            typeLiteral.setType(CatscriptType.INT);
+        } else if (type_lit_str.equals("string")) {
+            typeLiteral.setType(CatscriptType.STRING);
+        } else if (type_lit_str.equals("bool")) {
+            typeLiteral.setType(CatscriptType.BOOLEAN);
+        } else if (type_lit_str.equals("object")) {
+            typeLiteral.setType(CatscriptType.OBJECT);
+        }
+
+        return typeLiteral;
+    }
+
     private Statement parsePrintStatement() {
         if (tokens.match(PRINT)) {
 
@@ -182,6 +198,13 @@ public class CatScriptParser {
         VariableStatement varStmt = new VariableStatement();
         varStmt.setStart(tokens.consumeToken());
         varStmt.setVariableName(require(IDENTIFIER, varStmt).getStringValue());
+        // check for type literal
+        if (tokens.matchAndConsume(COLON)) {
+            // parse (get) type literal
+            TypeLiteral typeLiteral = parseTypeLiteral();
+            // set statement type literal
+            varStmt.setExplicitType(typeLiteral.getType());
+        }
         require(EQUAL, varStmt);
         varStmt.setExpression(parseExpression());
 
