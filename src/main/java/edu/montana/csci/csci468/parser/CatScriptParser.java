@@ -246,6 +246,9 @@ public class CatScriptParser {
             Token fncParam = tokens.consumeToken();
             String fncParamString = fncParam.getStringValue();
             TypeLiteral fncParamType = null;
+            if (tokens.matchAndConsume(COLON)) {
+                fncParamType = parseTypeLiteral();
+            }
             fncDefStmt.addParameter(fncParamString, fncParamType);
             tokens.matchAndConsume(COMMA);
         }
