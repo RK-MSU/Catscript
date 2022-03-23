@@ -83,11 +83,22 @@ public class CatScriptParser {
             return parseFunctionDefinitionStatement();
         }
 
+        // return statement
+        if (tokens.match(RETURN)) {
+            return parseReturnStatement();
+        }
+
         // identifier
         if (tokens.match(IDENTIFIER)) {
             Token token = tokens.consumeToken();
             if (tokens.matchAndConsume(EQUAL)) {
                 return parseAssignmentStatement(token);
+            }
+            // function call statement
+            else if (tokens.matchAndConsume(LEFT_PAREN)) {
+                FunctionCallExpression call_expression = parseFunctionCallStatement(token);
+                FunctionCallStatement stmt = new  FunctionCallStatement(call_expression);
+                return stmt;
             }
         }
 
@@ -240,14 +251,21 @@ public class CatScriptParser {
             Token fncParam = tokens.consumeToken();
             String fncParamString = fncParam.getStringValue();
             TypeLiteral fncParamType = null;
+            if (tokens.matchAndConsume(COLON)) {
+                fncParamType = parseTypeLiteral();
+            }
             fncDefStmt.addParameter(fncParamString, fncParamType);
             tokens.matchAndConsume(COMMA);
         }
         require(RIGHT_PAREN, fncDefStmt);
 
-        TypeLiteral type = new TypeLiteral();
-        type.setType(CatscriptType.VOID);
-        fncDefStmt.setType(type);
+        if (tokens.matchAndConsume(COLON)) {
+            fncDefStmt.setType(parseTypeLiteral());
+        } else {
+            TypeLiteral type = new TypeLiteral();
+            type.setType(CatscriptType.VOID);
+            fncDefStmt.setType(type);
+        }
 
         require(LEFT_BRACE, fncDefStmt);
         List<Statement> bodyStatements = new ArrayList<>();
@@ -265,6 +283,21 @@ public class CatScriptParser {
         assignmentStmt.setVariableName(name.getStringValue());
         assignmentStmt.setExpression(parseExpression());
         return assignmentStmt;
+    }
+
+    private Statement parseReturnStatement() {
+        tokens.matchAndConsume(RETURN);
+        ReturnStatement return_stmt = new ReturnStatement();
+        FunctionDefinitionStatement fnc_stmt = new FunctionDefinitionStatement();
+        fnc_stmt.setType(null);
+        return_stmt.setFunctionDefinition(fnc_stmt);
+        if (tokens.hasMoreTokens()) {
+            if (!tokens.match(RIGHT_BRACE)) {
+                return_stmt.setExpression(parseExpression());
+            }
+        }
+
+        return return_stmt;
     }
 
     //============================================================
