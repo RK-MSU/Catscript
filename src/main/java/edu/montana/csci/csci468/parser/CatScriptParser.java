@@ -89,6 +89,12 @@ public class CatScriptParser {
             if (tokens.matchAndConsume(EQUAL)) {
                 return parseAssignmentStatement(token);
             }
+            // function call statement
+            else if (tokens.matchAndConsume(LEFT_PAREN)) {
+                FunctionCallExpression call_expression = parseFunctionCallStatement(token);
+                FunctionCallStatement stmt = new  FunctionCallStatement(call_expression);
+                return stmt;
+            }
         }
 
         return new SyntaxErrorStatement(tokens.consumeToken());
