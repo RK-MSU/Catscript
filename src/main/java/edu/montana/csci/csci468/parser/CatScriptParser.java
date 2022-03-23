@@ -259,9 +259,13 @@ public class CatScriptParser {
         }
         require(RIGHT_PAREN, fncDefStmt);
 
-        TypeLiteral type = new TypeLiteral();
-        type.setType(CatscriptType.VOID);
-        fncDefStmt.setType(type);
+        if (tokens.matchAndConsume(COLON)) {
+            fncDefStmt.setType(parseTypeLiteral());
+        } else {
+            TypeLiteral type = new TypeLiteral();
+            type.setType(CatscriptType.VOID);
+            fncDefStmt.setType(type);
+        }
 
         require(LEFT_BRACE, fncDefStmt);
         List<Statement> bodyStatements = new ArrayList<>();
