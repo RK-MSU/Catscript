@@ -375,6 +375,7 @@ public class CatScriptParser {
             }
             String token_value = token.getStringValue();
             IdentifierExpression identifierExpression = new IdentifierExpression(token_value);
+            identifierExpression.setToken(token);
             return identifierExpression;
         } else if (tokens.match(INTEGER)) {
             Token integerToken = tokens.consumeToken();
