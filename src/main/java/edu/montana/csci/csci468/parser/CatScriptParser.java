@@ -105,6 +105,16 @@ public class CatScriptParser {
         return new SyntaxErrorStatement(tokens.consumeToken());
     }
 
+    // This is a helper method to help reduce code redundency
+    // This method is NOT outlined in the grammar
+    private List<Statement> parseProgramBodyStatements() {
+        List<Statement> bodyStatements = new ArrayList<>();
+        while(tokens.hasMoreTokens() && !tokens.match(RIGHT_BRACE)) {
+            bodyStatements.add(parseProgramStatement());
+        }
+        return bodyStatements;
+    }
+
     private TypeLiteral parseTypeLiteral() {
         TypeLiteral typeLiteral = new TypeLiteral();
         String type_lit_str = tokens.consumeToken().getStringValue();
@@ -164,10 +174,7 @@ public class CatScriptParser {
         require(RIGHT_PAREN, forStmt);
         require(LEFT_BRACE, forStmt);
 
-        List<Statement> bodyStatements = new ArrayList<>();
-        while(tokens.hasMoreTokens() && !tokens.match(RIGHT_BRACE)) {
-            bodyStatements.add(parseProgramStatement());
-        }
+        List<Statement> bodyStatements = parseProgramBodyStatements();
         forStmt.setBody(bodyStatements);
 
         Token forStmtEndBraceToken =  require(RIGHT_BRACE, forStmt);
@@ -192,10 +199,7 @@ public class CatScriptParser {
 
         require(LEFT_BRACE, ifStmt);
 
-        List<Statement> bodyStatements = new ArrayList<>();
-        while(tokens.hasMoreTokens() && !tokens.match(RIGHT_BRACE)) {
-            bodyStatements.add(parseProgramStatement());
-        }
+        List<Statement> bodyStatements = parseProgramBodyStatements();
         ifStmt.setTrueStatements(bodyStatements);
 
         Token ifStmtEndBraceToken = require(RIGHT_BRACE, ifStmt);
@@ -208,9 +212,7 @@ public class CatScriptParser {
                 elseStatements.add(elseIfStmt);
             } else {
                 require(LEFT_BRACE, ifStmt);
-                while(tokens.hasMoreTokens() && !tokens.match(RIGHT_BRACE)) {
-                    elseStatements.add(parseProgramStatement());
-                }
+                elseStatements = parseProgramBodyStatements();
                 ifStmtEndBraceToken = require(RIGHT_BRACE, ifStmt);
             }
 
@@ -276,10 +278,7 @@ public class CatScriptParser {
         }
 
         require(LEFT_BRACE, fncDefStmt);
-        List<Statement> bodyStatements = new ArrayList<>();
-        while(tokens.hasMoreTokens() && !tokens.match(RIGHT_BRACE)) {
-            bodyStatements.add(parseProgramStatement());
-        }
+        List<Statement> bodyStatements = parseProgramBodyStatements();
         fncDefStmt.setBody(bodyStatements);
         fncDefStmt.setEnd(require(RIGHT_BRACE, fncDefStmt));
 
