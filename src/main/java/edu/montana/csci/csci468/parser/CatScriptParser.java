@@ -301,7 +301,7 @@ public class CatScriptParser {
         ReturnStatement returnStmt = new ReturnStatement();
         returnStmt.setStart(require(RETURN, returnStmt));
         FunctionDefinitionStatement fncStmt = new FunctionDefinitionStatement();
-        fncStmt.setType(null);
+        fncStmt.setType(null); // TODO: check this guy
         returnStmt.setFunctionDefinition(fncStmt);
         if (tokens.hasMoreTokens() && !tokens.match(RIGHT_BRACE)) {
             returnStmt.setExpression(parseExpression());
