@@ -154,11 +154,9 @@ public class CatScriptParser {
 
         require(LEFT_PAREN, forStmt);
 
-        if (tokens.match(IDENTIFIER)) {
-            forStmt.setVariableName(tokens.getCurrentToken().getStringValue());
-        }
+        Token forStmtVariableToken = require(IDENTIFIER, forStmt);
+        forStmt.setVariableName(forStmtVariableToken.getStringValue());
 
-        require(IDENTIFIER, forStmt);
         require(IN, forStmt);
 
         forStmt.setExpression(parseExpression());
@@ -172,8 +170,10 @@ public class CatScriptParser {
         }
         forStmt.setBody(bodyStatements);
 
-        forStmt.setEnd(tokens.getCurrentToken());
-        require(RIGHT_BRACE, forStmt);
+        Token forStmtEndBraceToken =  require(RIGHT_BRACE, forStmt);
+        if (forStmtEndBraceToken.getType().equals(RIGHT_BRACE)) {
+            forStmt.setEnd(forStmtEndBraceToken);
+        }
 
         return forStmt;
     }
