@@ -380,6 +380,7 @@ public class CatScriptParser {
         } else if (tokens.match(INTEGER)) {
             Token integerToken = tokens.consumeToken();
             IntegerLiteralExpression integerExpression = new IntegerLiteralExpression(integerToken.getStringValue());
+            integerExpression.setToken(integerToken);
             return integerExpression;
         } else if (tokens.match(STRING)) {
             Token token = tokens.consumeToken();
