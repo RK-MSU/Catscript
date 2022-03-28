@@ -289,8 +289,11 @@ public class CatScriptParser {
 
     private Statement parseAssignmentStatement(Token name) {
         AssignmentStatement assignmentStmt = new AssignmentStatement();
+        assignmentStmt.setStart(name);
         assignmentStmt.setVariableName(name.getStringValue());
-        assignmentStmt.setExpression(parseExpression());
+        Expression expression = parseExpression();
+        assignmentStmt.setExpression(expression);
+        assignmentStmt.setEnd(expression.getEnd());
         return assignmentStmt;
     }
 
