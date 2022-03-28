@@ -105,6 +105,16 @@ public class CatScriptParser {
         return new SyntaxErrorStatement(tokens.consumeToken());
     }
 
+    // This is a helper method to help reduce code redundency
+    // This method is NOT outlined in the grammar
+    private List<Statement> parseProgramBodyStatements() {
+        List<Statement> bodyStatements = new ArrayList<>();
+        while(tokens.hasMoreTokens() && !tokens.match(RIGHT_BRACE)) {
+            bodyStatements.add(parseProgramStatement());
+        }
+        return bodyStatements;
+    }
+
     private TypeLiteral parseTypeLiteral() {
         TypeLiteral typeLiteral = new TypeLiteral();
         String type_lit_str = tokens.consumeToken().getStringValue();
@@ -154,11 +164,9 @@ public class CatScriptParser {
 
         require(LEFT_PAREN, forStmt);
 
-        if (tokens.match(IDENTIFIER)) {
-            forStmt.setVariableName(tokens.getCurrentToken().getStringValue());
-        }
+        Token forStmtVariableToken = require(IDENTIFIER, forStmt);
+        forStmt.setVariableName(forStmtVariableToken.getStringValue());
 
-        require(IDENTIFIER, forStmt);
         require(IN, forStmt);
 
         forStmt.setExpression(parseExpression());
@@ -166,14 +174,13 @@ public class CatScriptParser {
         require(RIGHT_PAREN, forStmt);
         require(LEFT_BRACE, forStmt);
 
-        List<Statement> bodyStatements = new ArrayList<>();
-        while(tokens.hasMoreTokens() && !tokens.match(RIGHT_BRACE)) {
-            bodyStatements.add(parseProgramStatement());
-        }
+        List<Statement> bodyStatements = parseProgramBodyStatements();
         forStmt.setBody(bodyStatements);
 
-        forStmt.setEnd(tokens.getCurrentToken());
-        require(RIGHT_BRACE, forStmt);
+        Token forStmtEndBraceToken =  require(RIGHT_BRACE, forStmt);
+        if (forStmtEndBraceToken.getType().equals(RIGHT_BRACE)) {
+            forStmt.setEnd(forStmtEndBraceToken);
+        }
 
         return forStmt;
     }
@@ -192,25 +199,28 @@ public class CatScriptParser {
 
         require(LEFT_BRACE, ifStmt);
 
-        List<Statement> bodyStatements = new ArrayList<>();
-        while(tokens.hasMoreTokens() && !tokens.match(RIGHT_BRACE)) {
-            bodyStatements.add(parseProgramStatement());
-        }
+        List<Statement> bodyStatements = parseProgramBodyStatements();
         ifStmt.setTrueStatements(bodyStatements);
-        require(RIGHT_BRACE, ifStmt);
+
+        Token ifStmtEndBraceToken = require(RIGHT_BRACE, ifStmt);
 
         if (tokens.matchAndConsume(ELSE)) {
             List<Statement> elseStatements = new ArrayList<>();
             if (tokens.match(IF)) {
-                elseStatements.add(parseIfStatement());
+                Statement elseIfStmt = parseIfStatement();
+                ifStmtEndBraceToken = elseIfStmt.getEnd();
+                elseStatements.add(elseIfStmt);
             } else {
                 require(LEFT_BRACE, ifStmt);
-                while(tokens.hasMoreTokens() && !tokens.match(RIGHT_BRACE)) {
-                    elseStatements.add(parseProgramStatement());
-                }
-                require(RIGHT_BRACE, ifStmt);
+                elseStatements = parseProgramBodyStatements();
+                ifStmtEndBraceToken = require(RIGHT_BRACE, ifStmt);
             }
+
             ifStmt.setElseStatements(elseStatements);
+        }
+
+        if (ifStmtEndBraceToken.getType().equals(RIGHT_BRACE)) {
+            ifStmt.setEnd(ifStmtEndBraceToken);
         }
 
         return ifStmt;
@@ -232,7 +242,9 @@ public class CatScriptParser {
             varStmt.setExplicitType(typeLiteral.getType());
         }
         require(EQUAL, varStmt);
-        varStmt.setExpression(parseExpression());
+        Expression varExpression = parseExpression();
+        varStmt.setEnd(varExpression.getEnd());
+        varStmt.setExpression(varExpression);
 
         return varStmt;
     }
@@ -268,10 +280,7 @@ public class CatScriptParser {
         }
 
         require(LEFT_BRACE, fncDefStmt);
-        List<Statement> bodyStatements = new ArrayList<>();
-        while(tokens.hasMoreTokens() && !tokens.match(RIGHT_BRACE)) {
-            bodyStatements.add(parseProgramStatement());
-        }
+        List<Statement> bodyStatements = parseProgramBodyStatements();
         fncDefStmt.setBody(bodyStatements);
         fncDefStmt.setEnd(require(RIGHT_BRACE, fncDefStmt));
 
@@ -280,24 +289,28 @@ public class CatScriptParser {
 
     private Statement parseAssignmentStatement(Token name) {
         AssignmentStatement assignmentStmt = new AssignmentStatement();
+        assignmentStmt.setStart(name);
         assignmentStmt.setVariableName(name.getStringValue());
-        assignmentStmt.setExpression(parseExpression());
+        Expression expression = parseExpression();
+        assignmentStmt.setExpression(expression);
+        assignmentStmt.setEnd(expression.getEnd());
         return assignmentStmt;
     }
 
     private Statement parseReturnStatement() {
-        tokens.matchAndConsume(RETURN);
-        ReturnStatement return_stmt = new ReturnStatement();
-        FunctionDefinitionStatement fnc_stmt = new FunctionDefinitionStatement();
-        fnc_stmt.setType(null);
-        return_stmt.setFunctionDefinition(fnc_stmt);
-        if (tokens.hasMoreTokens()) {
-            if (!tokens.match(RIGHT_BRACE)) {
-                return_stmt.setExpression(parseExpression());
-            }
+        ReturnStatement returnStmt = new ReturnStatement();
+        returnStmt.setStart(require(RETURN, returnStmt));
+        FunctionDefinitionStatement fncStmt = new FunctionDefinitionStatement();
+        fncStmt.setType(null); // TODO: check this guy
+        returnStmt.setFunctionDefinition(fncStmt);
+        if (tokens.hasMoreTokens() && !tokens.match(RIGHT_BRACE)) {
+            returnStmt.setExpression(parseExpression());
+            returnStmt.setEnd(returnStmt.getExpression().getEnd());
+        } else {
+            returnStmt.setEnd(returnStmt.getStart());
         }
 
-        return return_stmt;
+        return returnStmt;
     }
 
     //============================================================
@@ -380,6 +393,7 @@ public class CatScriptParser {
         } else if (tokens.match(INTEGER)) {
             Token integerToken = tokens.consumeToken();
             IntegerLiteralExpression integerExpression = new IntegerLiteralExpression(integerToken.getStringValue());
+            integerExpression.setToken(integerToken);
             return integerExpression;
         } else if (tokens.match(STRING)) {
             Token token = tokens.consumeToken();
