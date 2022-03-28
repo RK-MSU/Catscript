@@ -197,20 +197,28 @@ public class CatScriptParser {
             bodyStatements.add(parseProgramStatement());
         }
         ifStmt.setTrueStatements(bodyStatements);
-        require(RIGHT_BRACE, ifStmt);
+
+        Token ifStmtEndBraceToken = require(RIGHT_BRACE, ifStmt);
 
         if (tokens.matchAndConsume(ELSE)) {
             List<Statement> elseStatements = new ArrayList<>();
             if (tokens.match(IF)) {
-                elseStatements.add(parseIfStatement());
+                Statement elseIfStmt = parseIfStatement();
+                ifStmtEndBraceToken = elseIfStmt.getEnd();
+                elseStatements.add(elseIfStmt);
             } else {
                 require(LEFT_BRACE, ifStmt);
                 while(tokens.hasMoreTokens() && !tokens.match(RIGHT_BRACE)) {
                     elseStatements.add(parseProgramStatement());
                 }
-                require(RIGHT_BRACE, ifStmt);
+                ifStmtEndBraceToken = require(RIGHT_BRACE, ifStmt);
             }
+
             ifStmt.setElseStatements(elseStatements);
+        }
+
+        if (ifStmtEndBraceToken.getType().equals(RIGHT_BRACE)) {
+            ifStmt.setEnd(ifStmtEndBraceToken);
         }
 
         return ifStmt;
