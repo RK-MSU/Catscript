@@ -298,18 +298,18 @@ public class CatScriptParser {
     }
 
     private Statement parseReturnStatement() {
-        tokens.matchAndConsume(RETURN);
-        ReturnStatement return_stmt = new ReturnStatement();
-        FunctionDefinitionStatement fnc_stmt = new FunctionDefinitionStatement();
-        fnc_stmt.setType(null);
-        return_stmt.setFunctionDefinition(fnc_stmt);
+        ReturnStatement returnStmt = new ReturnStatement();
+        returnStmt.setStart(require(RETURN, returnStmt));
+        FunctionDefinitionStatement fncStmt = new FunctionDefinitionStatement();
+        fncStmt.setType(null);
+        returnStmt.setFunctionDefinition(fncStmt);
         if (tokens.hasMoreTokens()) {
             if (!tokens.match(RIGHT_BRACE)) {
-                return_stmt.setExpression(parseExpression());
+                returnStmt.setExpression(parseExpression());
             }
         }
-
-        return return_stmt;
+        returnStmt.setEnd(returnStmt.getExpression().getEnd());
+        return returnStmt;
     }
 
     //============================================================
