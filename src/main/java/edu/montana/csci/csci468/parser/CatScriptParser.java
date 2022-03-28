@@ -303,12 +303,13 @@ public class CatScriptParser {
         FunctionDefinitionStatement fncStmt = new FunctionDefinitionStatement();
         fncStmt.setType(null);
         returnStmt.setFunctionDefinition(fncStmt);
-        if (tokens.hasMoreTokens()) {
-            if (!tokens.match(RIGHT_BRACE)) {
-                returnStmt.setExpression(parseExpression());
-            }
+        if (tokens.hasMoreTokens() && !tokens.match(RIGHT_BRACE)) {
+            returnStmt.setExpression(parseExpression());
+            returnStmt.setEnd(returnStmt.getExpression().getEnd());
+        } else {
+            returnStmt.setEnd(returnStmt.getStart());
         }
-        returnStmt.setEnd(returnStmt.getExpression().getEnd());
+
         return returnStmt;
     }
 
