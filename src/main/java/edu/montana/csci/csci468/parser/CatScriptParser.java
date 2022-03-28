@@ -403,10 +403,12 @@ public class CatScriptParser {
         } else if (tokens.match(TRUE)) {
             Token token = tokens.consumeToken();
             BooleanLiteralExpression booleanLiteralExpression = new BooleanLiteralExpression(true);
+            booleanLiteralExpression.setToken(token);
             return booleanLiteralExpression;
         } else if (tokens.match(FALSE)) {
             Token token = tokens.consumeToken();
             BooleanLiteralExpression booleanLiteralExpression = new BooleanLiteralExpression(false);
+            booleanLiteralExpression.setToken(token);
             return booleanLiteralExpression;
         } else if (tokens.match(NULL)) {
             Token token = tokens.consumeToken();
