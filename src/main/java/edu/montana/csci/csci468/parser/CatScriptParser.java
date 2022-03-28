@@ -242,7 +242,9 @@ public class CatScriptParser {
             varStmt.setExplicitType(typeLiteral.getType());
         }
         require(EQUAL, varStmt);
-        varStmt.setExpression(parseExpression());
+        Expression varExpression = parseExpression();
+        varStmt.setEnd(varExpression.getEnd());
+        varStmt.setExpression(varExpression);
 
         return varStmt;
     }
