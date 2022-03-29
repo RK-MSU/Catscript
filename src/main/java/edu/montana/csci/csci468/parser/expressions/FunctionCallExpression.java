@@ -69,7 +69,7 @@ public class FunctionCallExpression extends Expression {
     public Object evaluate(CatscriptRuntime runtime) {
         List<Object> fncArgs = new ArrayList<>();
         for (Expression expr : arguments) {
-            fncArgs.add(expr);
+            fncArgs.add(expr.evaluate(runtime));
         }
         FunctionDefinitionStatement fnc = getProgram().getFunction(name);
         return fnc.invoke(runtime, fncArgs);

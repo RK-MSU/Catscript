@@ -40,13 +40,7 @@ public class IdentifierExpression extends Expression {
 
     @Override
     public Object evaluate(CatscriptRuntime runtime) {
-        Object val = runtime.getValue(name);
-        // TODO: check this!!!
-        if (val instanceof IntegerLiteralExpression) {
-            IntegerLiteralExpression intLitExpr = (IntegerLiteralExpression) val;
-            return intLitExpr.evaluate(runtime);
-        }
-        return val;
+        return runtime.getValue(name);
     }
 
     @Override
