@@ -7,6 +7,8 @@ import edu.montana.csci.csci468.parser.ErrorType;
 import edu.montana.csci.csci468.parser.ParseError;
 import edu.montana.csci.csci468.parser.SymbolTable;
 import edu.montana.csci.csci468.tokenizer.Token;
+import org.objectweb.asm.Label;
+import org.objectweb.asm.Opcodes;
 
 import static edu.montana.csci.csci468.tokenizer.TokenType.*;
 
@@ -92,7 +94,29 @@ public class ComparisonExpression extends Expression {
 
     @Override
     public void compile(ByteCodeGenerator code) {
-        super.compile(code);
+        // create labels
+        Label setToFalse = new Label();
+        Label end = new Label();
+
+        // compile left and right hand sides
+        leftHandSide.compile(code);
+        rightHandSide.compile(code);
+
+        if (isLessThan()) {
+            code.addJumpInstruction(Opcodes.IF_ICMPGE, setToFalse);
+        } else if(isLessThanOrEqual()) {
+            code.addJumpInstruction(Opcodes.IF_ICMPGT, setToFalse);
+        } else if (isGreater()) {
+            code.addJumpInstruction(Opcodes.IF_ICMPLE, setToFalse);
+        }else if (isGreaterThanOrEqual()) {
+            code.addJumpInstruction(Opcodes.IF_ICMPLT, setToFalse);
+        }
+
+        code.pushConstantOntoStack(1);
+        code.addJumpInstruction(Opcodes.GOTO, end);
+        code.addLabel(setToFalse);
+        code.pushConstantOntoStack(0);
+        code.addLabel(end);
     }
 
 }

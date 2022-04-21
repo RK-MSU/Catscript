@@ -8,6 +8,7 @@ import edu.montana.csci.csci468.parser.ParseError;
 import edu.montana.csci.csci468.parser.SymbolTable;
 import edu.montana.csci.csci468.tokenizer.Token;
 import edu.montana.csci.csci468.tokenizer.TokenType;
+import org.objectweb.asm.Opcodes;
 
 public class FactorExpression extends Expression {
 
@@ -79,7 +80,18 @@ public class FactorExpression extends Expression {
 
     @Override
     public void compile(ByteCodeGenerator code) {
-        super.compile(code);
+        // compile right-hand side
+        getLeftHandSide().compile(code);
+        // compile left-hand side
+        getRightHandSide().compile(code);
+        // is multiplication?
+        if (isMultiply()) {
+            // multiply two integers
+            code.addInstruction(Opcodes.IMUL);
+        } else {
+            // divide two integers
+            code.addInstruction(Opcodes.IDIV);
+        }
     }
 
 
