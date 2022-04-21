@@ -254,6 +254,7 @@ public class CatScriptParser {
             return null;
         }
         FunctionDefinitionStatement fncDefStmt = new FunctionDefinitionStatement();
+        currentFunctionDefinition = fncDefStmt;
         fncDefStmt.setStart(tokens.consumeToken());
 
         fncDefStmt.setName(require(IDENTIFIER, fncDefStmt).getStringValue());
@@ -299,16 +300,16 @@ public class CatScriptParser {
 
     private Statement parseReturnStatement() {
         ReturnStatement returnStmt = new ReturnStatement();
-        returnStmt.setStart(require(RETURN, returnStmt));
-        FunctionDefinitionStatement fncStmt = new FunctionDefinitionStatement();
-        fncStmt.setType(null); // TODO: check this guy
-        returnStmt.setFunctionDefinition(fncStmt);
+        require(RETURN, returnStmt);
+        returnStmt.setStart(tokens.lastToken());
         if (tokens.hasMoreTokens() && !tokens.match(RIGHT_BRACE)) {
             returnStmt.setExpression(parseExpression());
             returnStmt.setEnd(returnStmt.getExpression().getEnd());
         } else {
             returnStmt.setEnd(returnStmt.getStart());
         }
+
+        returnStmt.setFunctionDefinition(currentFunctionDefinition);
 
         return returnStmt;
     }

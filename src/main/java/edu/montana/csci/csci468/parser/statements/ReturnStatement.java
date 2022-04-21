@@ -8,6 +8,7 @@ import edu.montana.csci.csci468.parser.ErrorType;
 import edu.montana.csci.csci468.parser.ParseError;
 import edu.montana.csci.csci468.parser.SymbolTable;
 import edu.montana.csci.csci468.parser.expressions.Expression;
+import org.objectweb.asm.Opcodes;
 
 public class ReturnStatement extends Statement {
     private Expression expression;
@@ -54,7 +55,15 @@ public class ReturnStatement extends Statement {
 
     @Override
     public void compile(ByteCodeGenerator code) {
-        super.compile(code);
+        // compile code
+        expression.compile(code);
+
+        // add instruction depending on type
+        if(function.getType().equals(CatscriptType.INT) || function.getType().equals(CatscriptType.BOOLEAN)) {
+            code.addInstruction(Opcodes.IRETURN);
+        } else {
+            code.addInstruction(Opcodes.ARETURN);
+        }
     }
 
 }
