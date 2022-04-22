@@ -7,6 +7,9 @@ import edu.montana.csci.csci468.parser.ErrorType;
 import edu.montana.csci.csci468.parser.ParseError;
 import edu.montana.csci.csci468.parser.SymbolTable;
 import edu.montana.csci.csci468.parser.expressions.Expression;
+import org.objectweb.asm.Opcodes;
+
+import static edu.montana.csci.csci468.bytecode.ByteCodeGenerator.internalNameFor;
 
 public class VariableStatement extends Statement {
     private Expression expression;
@@ -79,6 +82,37 @@ public class VariableStatement extends Statement {
 
     @Override
     public void compile(ByteCodeGenerator code) {
-        super.compile(code);
+        // global variables
+        if (isGlobal()) { // store in a field
+            // There is one more condition to check
+            // - if the type is an INT
+            // - if the type is a BOOLEAN
+            // there is a distinction between the integer type and the reference type
+
+            code.addVarInstruction(Opcodes.ALOAD, 0);
+            expression.compile(code);
+            String descName = "I";
+
+            if (!getType().equals(CatscriptType.INT) && !getType().equals(CatscriptType.BOOLEAN)) {
+                descName = "L" + internalNameFor(getType().getJavaType()) + ";";
+            }
+
+            code.addField(variableName, descName);
+            code.addFieldInstruction(Opcodes.PUTFIELD, variableName, descName, code.getProgramInternalName());
+
+        } else { // store in a slot
+            // create a local storage slot
+            Integer localSlot = code.createLocalStorageSlotFor(variableName);
+
+            // compile code
+            expression.compile(code);
+
+            // there is a distinction between the integer type and the reference type
+            if (getType().equals(CatscriptType.INT) || getType().equals(CatscriptType.BOOLEAN)) {
+                code.addVarInstruction(Opcodes.ISTORE, localSlot);
+            } else {
+                code.addVarInstruction(Opcodes.ASTORE, localSlot);
+            }
+        }
     }
 }

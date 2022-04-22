@@ -6,6 +6,9 @@ import edu.montana.csci.csci468.parser.CatscriptType;
 import edu.montana.csci.csci468.parser.ErrorType;
 import edu.montana.csci.csci468.parser.ParseError;
 import edu.montana.csci.csci468.parser.SymbolTable;
+import org.objectweb.asm.Opcodes;
+
+import static edu.montana.csci.csci468.bytecode.ByteCodeGenerator.internalNameFor;
 
 public class IdentifierExpression extends Expression {
     private final String name;
@@ -50,7 +53,29 @@ public class IdentifierExpression extends Expression {
 
     @Override
     public void compile(ByteCodeGenerator code) {
-        super.compile(code);
+        // see if there is a local storage slot for variable
+        Integer localSlot = code.resolveLocalStorageSlotFor(getName());
+
+        // does it exist?
+        if (localSlot != null) { // yes! there is a local storage slot
+            // local variable
+            if (getType().equals(CatscriptType.INT) || getType().equals(CatscriptType.BOOLEAN)) {
+                code.addVarInstruction(Opcodes.ILOAD, localSlot);
+            } else {
+                code.addVarInstruction(Opcodes.ALOAD, localSlot);
+            }
+        } else {
+            // global variable
+            code.addVarInstruction(Opcodes.ALOAD, 0);
+            String descName = "I";
+
+            if (!getType().equals(CatscriptType.INT) && !getType().equals(CatscriptType.BOOLEAN)) {
+                descName = "L" + internalNameFor(getType().getJavaType()) + ";";
+            }
+
+            code.addFieldInstruction(Opcodes.GETFIELD, getName(), descName, code.getProgramInternalName());
+
+        }
     }
 
 
