@@ -58,6 +58,11 @@ public class ReturnStatement extends Statement {
         // compile code
         expression.compile(code);
 
+        // are we returning an object?
+        if(function.getType().equals(CatscriptType.OBJECT)){
+            box(code, expression.getType());
+        }
+
         // add instruction depending on type
         if(function.getType().equals(CatscriptType.INT) || function.getType().equals(CatscriptType.BOOLEAN)) {
             code.addInstruction(Opcodes.IRETURN);
