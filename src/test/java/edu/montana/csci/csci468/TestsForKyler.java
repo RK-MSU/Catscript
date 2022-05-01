@@ -1,6 +1,5 @@
 package edu.montana.csci.csci468;
 
-import edu.montana.csci.csci468.CatscriptTestBase;
 import edu.montana.csci.csci468.tokenizer.Token;
 import org.junit.jupiter.api.Test;
 
@@ -10,7 +9,7 @@ import static edu.montana.csci.csci468.tokenizer.TokenType.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
-public class PartnerTests extends CatscriptTestBase {
+public class TestsForKyler extends CatscriptTestBase {
 
     /**
      * Proper Tokenization test ensures the tokens and correctly identified.
